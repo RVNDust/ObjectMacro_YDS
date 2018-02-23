@@ -1,0 +1,9 @@
+Grammar listes:
+Lexer
+id = ('a'..'z')+;
+Ignored ' ', #9, #10, #13;
+
+Parser
+
+list = {many:} id list |
+       {one:} id ;

@@ -1,0 +1,21 @@
+Grammar instuctions:
+Lexer
+id = ('a'..'z')+;
+Ignored ' ', #9, #10, #13;
+
+Parser
+
+prog = stmt* ;
+stmt =
+  {assign:} id '=' expr ';' |
+  {print:} 'print' '(' expr ')' ';' |
+  {while:} 'while' '(' expr ')' '{' stmt* '}'
+//alt1 | {until:} 'do' '{' stmt* '}' 'until' '(' expr ')' ';'
+//alt2 | {if:} 'if' '('expr')' '{'stmt*'}' else?
+//alt3 | {call:} id '(' args ')' ';'
+  ;
+
+//alt2 else = 'else' '{' stmt* '}' ;
+//alt3 args = (expr Separator ',')* ;
+
+expr = id;

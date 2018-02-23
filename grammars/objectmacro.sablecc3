@@ -1,0 +1,379 @@
+/* This file is part of SableCC ( http://sablecc.org ).
+ *
+ * See the NOTICE file distributed with this work for copyright information.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+Package org.sablecc.objectmacro.syntax3;
+
+Helpers
+
+  // Based on Unicode 5.1.0
+
+  ascii_lu = [0x0041 .. 0x005A];
+  ascii_ll = [0x0061 .. 0x007A];
+
+  ascii_l = [ascii_lu + ascii_ll];
+
+  ascii_nd = [0x0030 .. 0x0039];
+
+  ascii_n = ascii_nd;
+
+  ascii_pc = 0x005F;
+  ascii_pd = 0x002D;
+  ascii_ps = [[0x0028 + 0x005B] + 0x007B];
+  ascii_pe = [[0x0029 + 0x005D] + 0x007D];
+  ascii_po = [[[[0x0021 .. 0x0023] + [0x0025 .. 0x0027]] +
+               [[0x002A + 0x002C] + [0x002E .. 0x002F]]] +
+              [[[0x003A .. 0x003B] + [0x003F .. 0x0040]] + 0x005C]];
+
+  ascii_p = [[[ascii_pc + ascii_pd] + [ascii_ps + ascii_pe]] + ascii_po];
+
+  ascii_sm = [[0x002B + [0x003C .. 0x003E]] + [0x007C + 0x007E]];
+  ascii_sc = 0x0024;
+  ascii_sk = [0x005E + 0x0060];
+
+  ascii_s = [[ascii_sm + ascii_sc] + ascii_sk];
+
+  ascii_zs = 0x0020;
+
+  ascii_z = ascii_zs;
+
+  ascii_cc = [[0x0000 .. 0x001F] + 0x007F];
+
+  ascii_c = ascii_cc;
+
+  ascii = [[[ascii_l + ascii_n] + [ascii_p + ascii_s]] + [ascii_z + ascii_c]];
+
+  ascii_pattern_white_space = [[0x0009 .. 0x000D] + 0x0020];
+  ascii_pattern_syntax = [[[[0x0021 .. 0x002F] + [0x003A .. 0x0040]] +
+                          [[0x005B .. 0x005E] + 0x0060]] + [0x007B .. 0x007E]];
+
+  ascii_id_start = [[0x0041 .. 0x005A] + [0x0061 .. 0x007A]];
+  ascii_id_continue = [[[0x0030 .. 0x0039] + [0x0041 .. 0x005A]] +
+                       [0x005F + [0x0061 .. 0x007A]]];
+
+  ascii_identifier = ascii_id_start ascii_id_continue*;
+
+  ascii_newline = [0x000A .. 0x000D] | 0x000D 0x000A;
+
+  // Other helpers
+
+  white_space_not_newline = [ascii_pattern_white_space - [0x000A .. 0x000D]];
+
+  comment_char = [[ascii - ascii_c] + white_space_not_newline];
+
+  text_char = [[[ascii - ascii_c] + white_space_not_newline] - '{'];
+  text_escape = '{' '{';
+
+  string_char = [[[ascii - ascii_c] + white_space_not_newline] -
+                 [['\' + '{'] + '"']];
+  string_escape = '\' [['\' + '{'] + ['"' + 'n']];
+
+  lowercase = ['a'..'z'];
+  uppercase = ['A' .. 'Z'];
+  digit = ['0'..'9'];
+
+  normal_part = lowercase (lowercase | digit | uppercase)*;
+  normal_identifier = normal_part ('_' normal_part)*;
+
+States
+  top_level, macro_definition, macro_body, command, string;
+
+Tokens
+
+  {top_level->macro_definition}
+  macro_kw = 'Macro';
+
+  {macro_definition}
+  params_kw = 'Param';
+
+  {macro_definition}
+  string_kw = 'String';
+
+  {macro_definition}
+  internal_kw = 'Internal';
+
+  /* custom transition *->previous state */
+  insert_command = '{Insert:';
+
+  {macro_definition->macro_body}
+  begin = '{Begin}';
+
+  {macro_body->top_level}
+  end = '{End}';
+
+  {macro_definition, top_level, macro_body}
+  comment = '#' comment_char* ascii_newline?;
+
+  {macro_body}
+  unknown_command = '{' uppercase normal_part* ':';
+
+  {macro_body}
+  text_part = text_char+ | '{';
+
+  {macro_body}
+  eol = ascii_newline;
+
+  {macro_body}
+  text_escape = text_escape;
+
+  {top_level, command, macro_body, string}
+  invalid_var = '{' ascii_id_start* ('_' digit+ ascii_id_continue*)+ '}';
+
+  {macro_definition, command}
+  identifier = normal_identifier;
+
+  {top_level, command, macro_definition}
+  invalid_identifier = ascii_id_start* ('_' digit+ ascii_id_continue*)+;
+
+  {command, macro_definition}
+  l_par = '(';
+
+  {command, macro_definition}
+  r_par = ')';
+
+  /* custom transition *->previous state */
+  r_brace = '}';
+
+  {macro_definition, command}
+  comma = ',';
+
+  {macro_definition}
+  assign = '=';
+
+  {top_level, command, macro_definition}
+  blank = ascii_pattern_white_space+;
+
+  {macro_definition, string, command}
+  /* custom transition *->previous state */
+  dquote = '"';
+
+  {string}
+  string_text = string_char+;
+
+  {string}
+  string_escape = string_escape;
+
+  {macro_body, string}
+  variable = '{' normal_identifier '}';
+
+  {macro_definition, command}
+  colon = ':';
+
+  {macro_definition}
+  semi_colon = ';';
+
+  ctrl_z = 0x001A;
+
+  invalid_character = [0..0xffff];
+
+Ignored Tokens
+
+  blank, comment;
+
+Productions
+
+  source_file
+    =
+      [source_file_parts]:source_file_part* ctrl_z?
+        {-> New source_file([source_file_parts.source_file_part]) }
+    ;
+
+  source_file_part
+        {-> source_file_part? }
+    =
+      {macro} macro
+    ;
+
+  macro
+    =
+      macro_definition macro_body
+         {-> New macro(macro_definition.macro_kw, macro_definition.identifier,
+            [macro_definition.params], [macro_definition.internals],
+             macro_body.begin, [macro_body.macro_body_parts])}
+    ;
+
+  macro_definition
+        {-> macro_kw identifier [params]:param* [internals]:param* }
+    =
+      macro_kw identifier macro_parameters
+        {-> macro_kw identifier [macro_parameters.params] [macro_parameters.internals] }
+    ;
+
+  macro_body
+        {-> begin [macro_body_parts]:macro_body_part* }
+    =
+      begin [begin_eol]:eol [macro_body_parts]:macro_body_part* [end_eol]:eol end
+        {-> begin [macro_body_parts.macro_body_part]}
+    ;
+
+  macro_body_part
+        {-> macro_body_part? }
+    =
+      {insert} insert_command macro_reference r_brace
+        {-> New macro_body_part.insert(macro_reference)}
+    |
+      {text} text_part
+    |
+      {eol} eol
+    |
+      {escape} text_escape
+    |
+      {var} variable
+    ;
+
+  macro_parameters
+        {-> [params]:param* [internals]:param*}
+    =
+      [params]:external_args? [internals]:internal_args?
+        {-> [params.params] [internals.params] }
+    ;
+
+  external_args
+        {-> [params]:param*}
+    =
+      params_kw [params]:param+
+        {-> [params.param]};
+
+  internal_args
+        {-> [params]:param*}
+    =
+      internal_kw [params]:param+
+        {-> [params.param]}
+    ;
+
+  param
+    =
+      [name]:identifier colon type [directives]:directive* semi_colon
+        {-> New param(name, type, [directives])}
+    ;
+
+  directive
+    =
+      comma identifier assign string
+        {-> New directive(identifier, string.dquote, [string.string])}
+    ;
+
+  macro_reference
+    =
+      {name} identifier call?
+        {-> New macro_reference(identifier, [call.static_values])}
+    ;
+
+  static_value
+    =
+      {var} identifier
+    |
+      {string} string
+        {-> New static_value.string(string.dquote, [string.string])}
+    ;
+
+  type
+    =
+      {string} string_kw
+        {-> New type.string(string_kw)}|
+      {macros} macro_reference [additional_macros_reference]:additional_macro_reference*
+        {-> New type.macros([macro_reference, additional_macros_reference.macro_reference])}
+    ;
+
+  additional_macro_reference
+        {-> macro_reference}
+    =
+      comma macro_reference
+        {-> macro_reference}
+    ;
+
+  call
+        {-> [static_values]:static_value*}
+    =
+       l_par values r_par
+        {-> [values.static_values]}
+    ;
+
+  values
+        {-> [static_values]:static_value*}
+    =
+      static_value [additional_static_values]:additional_static_value*
+        {-> [static_value, additional_static_values.static_value]}
+    ;
+
+  additional_static_value
+        {-> static_value}
+    =
+      comma static_value
+        {-> static_value};
+
+  string
+        {-> dquote [string]:string_part*}
+    =
+      [l_dquote]:dquote [parts]:string_part* [r_dquote]:dquote
+        {-> l_dquote [parts.string_part]}
+    ;
+
+  string_part
+    =
+      {insert} insert_command macro_reference r_brace
+        {-> New string_part.insert(macro_reference)}
+    |
+      {text} [text]:string_text
+    |
+      {escape} string_escape
+    |
+      {var} variable
+    ;
+
+Abstract Syntax Tree
+
+  source_file =
+      [source_file_parts]:source_file_part*;
+
+  source_file_part =
+      {macro} macro;
+
+  macro =
+      macro_kw [name]:identifier [params]:param* [internals]:param* begin [macro_body_parts]:macro_body_part*;
+
+  macro_body_part =
+      {insert} macro_reference |
+      {var} variable |
+      {text} text_part |
+      {eol} eol |
+      {escape} text_escape;
+
+  param =
+      [name]:identifier type [directives]:directive*;
+
+  directive =
+      [name]:identifier [l_dquote]:dquote [parts]:string_part*;
+
+  macro_reference =
+      [name]:identifier [values]:static_value*;
+
+  static_value =
+      {var} identifier |
+      {string} [l_dquote]:dquote [parts]:string_part*;
+
+  type =
+      {string} string_kw |
+      {macros} macro_reference+;
+
+  call =
+      [static_values]:static_value+;
+
+  string_part =
+      {insert} [macro]:macro_reference |
+      {text} [text]:string_text |
+      {escape} string_escape |
+      {var} variable;

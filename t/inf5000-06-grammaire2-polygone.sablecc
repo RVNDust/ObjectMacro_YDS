@@ -1,0 +1,10 @@
+Grammar polygones:
+Lexer
+  num = ('0'..'9')+;
+  Ignored ' ', #9, #10, #13;
+
+Parser
+  polygone = '(' (point Separator ',')* ')' ;
+  point =
+    {cart:} '(' num 'x' ',' num 'y' ')' |
+    {pol:} '(' num ',' num 'deg' ')' ;

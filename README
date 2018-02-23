@@ -1,0 +1,59 @@
+----------------------------------------------------------------------
+WARNING: This is an incomplete ("beta") version of SableCC 4. It is
+targeted to users that want to test the new features of SableCC 4.
+If you are are looking for a stable SableCC version, please visit:
+
+    http://sablecc.org/wiki/DownloadPage
+----------------------------------------------------------------------
+
+Welcome to SableCC 4!
+=====================
+
+This beta version of SableCC 4 contains a preliminary version of the
+lexer generator.
+
+Package Content
+===============
+
+Here is a description of the content of this package:
+
+* README: This file.
+* LICENSE and NOTICE: License terms.
+
+* lib/: Executable jar files.
+
+* examples/: Examples.
+
+* src/: Source code.
+* grammars/: Source grammars.
+* macros/: Source macros.
+* manifest/: Jar manifest file.
+
+* ant-files/: Build file.
+
+About SableCC 4
+===============
+
+SableCC is a parser generator which generates fully featured
+object-oriented frameworks for building compilers, interpreters and
+other text parsers. In particular, generated frameworks include
+intuitive strictly-typed abstract syntax trees and tree
+walkers. SableCC also keeps a clean separation between
+machine-generated code and user-written code which leads to a shorter
+development cycle.
+
+SableCC 4 is a complete rewrite of SableCC that brings many new
+features:
+
+* Improved lexer engine (additional operators, lookahead, and more).
+* Improved parser engine (linear approximate LR(K) parsing, semantic
+  selectors, and more).
+* Improved conflict reporting (enabling grammar debugging).
+* Flexible code generation (to enable back-ends for various
+  languages).
+* Improved syntax for CST->AST transformations.
+
+What's New in SableCC [version]
+===============================
+
+[Milestone text]
