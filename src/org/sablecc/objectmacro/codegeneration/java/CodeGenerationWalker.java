@@ -28,6 +28,7 @@ import org.sablecc.objectmacro.codegeneration.java.structure.Macro;
 import org.sablecc.objectmacro.codegeneration.java.structure.ParamMacroRefStruct;
 import org.sablecc.objectmacro.codegeneration.java.structure.ParamStringStruct;
 import org.sablecc.objectmacro.exception.*;
+import org.sablecc.objectmacro.intermediate.macro.MInternal;
 import org.sablecc.objectmacro.intermediate.syntax3.analysis.*;
 import org.sablecc.objectmacro.intermediate.syntax3.node.*;
 import org.sablecc.objectmacro.syntax3.node.PStringPart;
@@ -103,7 +104,8 @@ public class CodeGenerationWalker
 
     private MRedefinedApplyInitializer currentRedefinedApplyInitializer;
 
-    private ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> currentParamSet;
+    private ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> currentParamSet = new ArrayList<>();
+    private ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> currentInternalSet = new ArrayList<>();
 
     private ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> currentContextParam = new ArrayList<>();
     private ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> currentContextExpansion = new ArrayList<>();
@@ -121,6 +123,7 @@ public class CodeGenerationWalker
 
 
     private MStringParam currentStringParam;
+    private MInitStringBuilder currentInitStringBuilder;
 
     private ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> currentListRedefinedInternalSetter = new ArrayList<>();
 
@@ -316,38 +319,55 @@ public class CodeGenerationWalker
             ,this.currentNewContextExpansion.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[currentNewContextExpansion.size()]));*/
     }
 
-    /*@Override
+    @Override
     public void caseAInternal(
             AInternal node) {
 
         String paramName = buildNameCamelCase(node.getNames());
 
         if(node.getType() instanceof AStringType){
-            this.currentMacroToBuild.newInternalStringField(paramName);
-            this.currentMacroToBuild.newInternalStringSetter(paramName);
+            MInternalStringField mInternalStringField = new MInternalStringField(paramName);
+            MInternalStringSetter mInternalStringSetter = new MInternalStringSetter(paramName);
 
-            MParamStringRefBuilder mParamStringRefBuilder = this.currentMacroToBuild
-                    .newParamStringRefBuilder(paramName);
-            mParamStringRefBuilder.newContextParam();
-            mParamStringRefBuilder.newGetInternalTail();
+            this.currentMacro.getField().add(mInternalStringField);
+            this.currentMacro.getSetter().add(mInternalStringSetter);
 
-            MParamStringRef mParamStringRef = this.currentMacroToBuild.newParamStringRef(paramName);
-            mParamStringRef.newContextParam();
-            mParamStringRef.newGetInternalTail();
+            MParamStringRefBuilder mParamStringRefBuilder = new MParamStringRefBuilder(paramName
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextParam()}
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MGetInternalTail()});
+
+            this.currentMacro.getBuilder().add(mParamStringRefBuilder);
+
+            MParamStringRef mParamStringRef = new MParamStringRef(paramName
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextParam()}
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MGetInternalTail()});
+
+            this.currentMacro.getRef().add(mParamStringRef);
         }
         else if(node.getType() instanceof AMacroRefsType){
-            this.currentMacroToBuild.newInternalMacroField(paramName);
-            this.currentMacroToBuild.newContextField(paramName);
+            MInternalMacroField mInternalMacroField = new MInternalMacroField(paramName);
+            MContextField mContextField = new MContextField(paramName);
 
-            this.currentParamMacroRefBuilder = this.currentMacroToBuild
-                    .newParamMacroRefBuilder(paramName, String.valueOf(this.indexBuilder));
-            this.currentParamMacroRefBuilder.newContextParam();
-            this.currentParamMacroRefBuilder.newGetInternalTail();
-            this.currentParamMacroRefBuilder.newContextName(paramName.concat(CONTEXT_STRING));
+            this.currentMacro.getField().add(mInternalMacroField);
+            this.currentMacro.getContextField().add(mContextField);
 
-            MParamMacroRef mParamMacroRef = this.currentMacroToBuild.newParamMacroRef(paramName);
-            mParamMacroRef.newGetInternalTail();
-            mParamMacroRef.newContextParam();
+            MParamMacroRefBuilder mParamMacroRefBuilder = new MParamMacroRefBuilder(paramName
+                    , String.valueOf(this.indexBuilder)
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextParam()}
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextName(paramName.concat(CONTEXT_STRING))}
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MGetInternalTail()}
+                    , this.currentNone.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentNone.size()])
+                    , this.currentBeforeFirst.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentBeforeFirst.size()])
+                    , this.currentSeparators.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentSeparators.size()])
+                    , this.currentAfterLast.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentAfterLast.size()]));
+
+            this.currentMacro.getBuilder().add(mParamMacroRefBuilder);
+
+            MParamMacroRef mParamMacroRef = new MParamMacroRef(paramName
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextParam()}
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MGetInternalTail()});
+
+            this.currentMacro.getRef().add(mParamMacroRef);
 
             //Initialize directives before type because of conflicts with stringBuilder
             for (PDirective directive : node.getDirectives()) {
@@ -358,9 +378,15 @@ public class CodeGenerationWalker
 
             this.currentContext = paramName.concat(CONTEXT_STRING);
             this.contextNames.add(currentContext);
-            this.currentApplyInitializer =
-                    this.currentMacroToBuild.newInternalMacroSetter(paramName)
-                            .newApplyInternalsInitializer(paramName);
+
+
+            this.currentApplyInitializer = new MApplyInternalsInitializer(paramName
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {this.currentRedefinedInternalsSetter});
+
+            MInternalMacroSetter mInternalMacroSetter = new MInternalMacroSetter(paramName
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {this.currentApplyInitializer});
+
+            this.currentMacro.getSetter().add(mInternalMacroSetter);
 
         }
         else{
@@ -381,7 +407,7 @@ public class CodeGenerationWalker
         this.currentParamMacroRefBuilder = null;
         this.createdBuilders = new ArrayList<>();
         this.createdInserts = new ArrayList<>();
-    }*/
+    }
 
     @Override
     public void caseAParam(
@@ -390,6 +416,8 @@ public class CodeGenerationWalker
         String paramName = buildNameCamelCase(node.getNames());
         ParamStringStruct paramStringStruct = new ParamStringStruct();
         ParamMacroRefStruct paramMacroRefStruct = new ParamMacroRefStruct();
+        MMacroParam mMacroParam = null;
+        MMacroArg mMacroArg = null;
 
         if(node.getType() instanceof AStringType){
             paramStringStruct.mParamStringField = new MParamStringField(paramName);
@@ -415,6 +443,8 @@ public class CodeGenerationWalker
             paramMacroRefStruct.mParamMacroField = new MParamMacroField(paramName);
             paramMacroRefStruct.mContextField = new MContextField(paramName);
 
+            this.currentMacro.getContextField().add(paramMacroRefStruct.mContextField);
+
             for (PDirective directive : node.getDirectives()) {
                 directive.apply(this);
             }
@@ -422,22 +452,11 @@ public class CodeGenerationWalker
             this.currentContext = paramName.concat(CONTEXT_STRING);
             this.indexBuilder = 0;
 
-            //Inutile avec la version 2 d'ObjectMacro ???
-            /*MParamMacroSetter mParamMacroSetter = this.currentMacroToBuild.newParamMacroSetter(paramName);
-            mParamMacroSetter.newParamArg(paramName);
-            mParamMacroSetter.newMacroParam(paramName);*/
+            mMacroParam = new MMacroParam(paramName);
+            mMacroArg = new MMacroArg(paramName);
 
-            this.currentParamList.add(new MMacroParam(paramName));
+            this.currentParamList.add(mMacroParam);
             this.contextNames.add(currentContext);
-
-            paramMacroRefStruct.mParamMacroRef = new MParamMacroRef(paramName
-            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[0]
-            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[0]);
-
-            this.currentMacro.getField().add(paramMacroRefStruct.mParamMacroField);
-            this.currentMacro.getRef().add(paramMacroRefStruct.mParamMacroRef);
-            this.currentMacro.getBuilder().add(paramMacroRefStruct.mParamMacroRefBuilder);
-            this.currentMacro.getSetter().add(paramMacroRefStruct.mParamMacroSetter);
         }
         else{
             throw new InternalException("case unhandled");
@@ -447,7 +466,8 @@ public class CodeGenerationWalker
 
         if(node.getType() instanceof AMacroRefsType)
         {
-            currentContextParam.add(new MContextParam());
+            MContextParam mContextParam = new MContextParam();
+            currentContextParam.add(mContextParam);
             paramMacroRefStruct.mParamMacroRefBuilder = new MParamMacroRefBuilder(paramName
                     , String.valueOf(this.indexBuilder)
                     , currentContextParam.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[currentContextParam.size()])
@@ -460,6 +480,20 @@ public class CodeGenerationWalker
 
             this.currentApplyInitializer = new MApplyInternalsInitializer(paramName
             , this.currentListRedefinedInternalSetter.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentListRedefinedInternalSetter.size()]));
+
+            paramMacroRefStruct.mParamMacroRef = new MParamMacroRef(paramName
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {mContextParam}
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MGetInternalTail()});
+
+            paramMacroRefStruct.mParamMacroSetter = new MParamMacroSetter(paramName
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {mMacroParam}
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MParamArg(paramName)}
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {this.currentApplyInitializer});
+
+            this.currentMacro.getSetter().add(paramMacroRefStruct.mParamMacroSetter);
+            this.currentMacro.getField().add(paramMacroRefStruct.mParamMacroField);
+            this.currentMacro.getRef().add(paramMacroRefStruct.mParamMacroRef);
+            this.currentMacro.getBuilder().add(paramMacroRefStruct.mParamMacroRefBuilder);
         }
 
         outAParam(node);
@@ -520,6 +554,13 @@ public class CodeGenerationWalker
     public void inAMacroRef(
             AMacroRef node) {
         this.isInAMacroRef = true;
+        this.currentMacroName = buildNameCamelCase(node.getNames());
+        if(this.currentContext != null){
+            this.currentRedefinedInternalsSetter = new MRedefinedInternalsSetter(currentMacroName
+                    , this.currentListParts.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentListParts.size()])
+                    , this.currentInternalSet.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentInternalSet.size()]));
+        }
+
     }
 
     @Override
@@ -527,11 +568,6 @@ public class CodeGenerationWalker
             AMacroRef node) {
 
         this.currentMacroName = buildNameCamelCase(node.getNames());
-        if(this.currentContext != null){
-            this.currentRedefinedInternalsSetter = new MRedefinedInternalsSetter(currentMacroName
-            , this.currentListParts.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentListParts.size()])
-            , this.currentInternalList.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentInternalList.size()]));
-        }
 
         this.currentMacroName = null;
         this.isInAMacroRef = false;
@@ -558,9 +594,9 @@ public class CodeGenerationWalker
             for(PTextPart part : node.getParts()){
                 part.apply(this);
             }
+
         }
         else{
-
             index_builder = getLetterFromInteger(this.indexBuilder);
 
             //Avoid declaring stringbuilder of the same name
@@ -569,7 +605,20 @@ public class CodeGenerationWalker
                 index_builder = getLetterFromInteger(this.indexBuilder);
             }
 
+            mInitStringBuilder = new MInitStringBuilder(index_builder);
+            mStringBuilderBuild = new MStringBuilderBuild(index_builder);
+
+            if(this.isInAMacroRef)
+            {
+                /*this.currentListParts.add(mInitStringBuilder);*/
+            }
+
             this.createdBuilders.add(index_builder);
+
+            mSetInternal = new MSetInternal(INSERT_VAR_NAME.concat(String.valueOf(this.indexInsert))
+                    ,buildNameCamelCase(node.getParamName())
+                    ,"null"
+                    ,new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {mStringBuilderBuild});
 
             //To avoid modification on indexes
             Integer tempIndexBuilder = this.indexBuilder;
@@ -581,15 +630,8 @@ public class CodeGenerationWalker
 
             this.indexBuilder = tempIndexBuilder;
             this.indexInsert = tempIndexInsert;
-
-            mSetInternal = new MSetInternal(INSERT_VAR_NAME.concat(String.valueOf(this.indexInsert))
-                    ,buildNameCamelCase(node.getParamName())
-                    ,"null"
-                    ,new org.sablecc.objectmacro.codegeneration.java.macro.Macro[0]);
-
         }
-        mInitStringBuilder = new MInitStringBuilder(index_builder);
-        mStringBuilderBuild = new MStringBuilderBuild(index_builder);
+        this.currentInternalSet.add(mSetInternal);
     }
 
     @Override
@@ -738,7 +780,7 @@ public class CodeGenerationWalker
         Integer tempIndex = this.indexBuilder;
         Integer tempIndexInsert = this.indexInsert;
         ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> tempListParts = this.currentListParts;
-        ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> tempInternalList = this.currentInternalList;
+        ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> tempInternalList = this.currentInternalSet;
         this.currentContext = null;
 
         node.getMacroRef().apply(this);
@@ -747,7 +789,7 @@ public class CodeGenerationWalker
                 ,index_builder
                 ,index_insert
                 ,this.currentListParts.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentListParts.size()])
-                ,this.currentInternalList.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentInternalList.size()]));
+                ,this.currentInternalSet.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentInternalSet.size()]));
 
         if(this.currentContext != null
                 && this.isInAMacroRef){
@@ -781,7 +823,7 @@ public class CodeGenerationWalker
         this.currentContext = tempContext;
         this.currentMacroName = tempMacroName;
         this.currentListParts = tempListParts;
-        this.currentInternalList = tempInternalList;
+        this.currentInternalSet = tempInternalList;
 
     }
 
@@ -790,44 +832,28 @@ public class CodeGenerationWalker
             AVarValue node) {
 
         String var_name = buildNameCamelCase(node.getNames());
+        MSetInternal setInternal;
+        MParamRef paramRef;
 
         if(this.currentContext != null){
-            /*MParamRef paramRef = this.currentRedefinedInternalsSetter.newSetInternal(
-                    this.currentMacroName,
-                    buildNameCamelCase(node.getParamName()),
-                    this.currentContext)
-                        .newParamRef(var_name);
+            paramRef = new MParamRef(var_name
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextName(this.currentContext)});
 
-            if(this.currentMacro.getInternals().contains(var_name)){
-                paramRef.newContextName(this.currentContext);
-            }*/
-            this.currentInternalList.add(new MSetInternal(this.currentMacroName
-            ,buildNameCamelCase(node.getParamName())
-            ,this.currentContext
-            ,new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MParamRef(var_name, new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextName(this.currentContext)})}));
+            setInternal = new MSetInternal(this.currentMacroName
+            , buildNameCamelCase(node.getParamName())
+            , this.currentContext
+            , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {paramRef});
         }
         else{
-            /*MParamRef mParamRef =
-                    this.currentInsertMacroPart.newSetInternal(
-                        INSERT_VAR_NAME.concat(String.valueOf(this.indexInsert)),
-                        buildNameCamelCase(node.getParamName()),
-                        "null").newParamRef(var_name);
+            paramRef = new MParamRef(var_name
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextArg()});
 
-            if(this.currentMacro.getInternals().contains(var_name)){
-                mParamRef.newContextArg();
-            }*/
-
-            this.currentInternalList.add(new MSetInternal(INSERT_VAR_NAME.concat(String.valueOf(this.indexInsert))
-                    ,buildNameCamelCase(node.getParamName())
-                    ,"null"
-                    ,new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {
-                        new MParamRef(var_name
-                        , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {new MContextArg()}
-                        )
-                    })
-            );
+            setInternal = new MSetInternal(INSERT_VAR_NAME.concat(String.valueOf(this.indexInsert))
+                    , buildNameCamelCase(node.getParamName())
+                    , "null"
+                    , new org.sablecc.objectmacro.codegeneration.java.macro.Macro[] {paramRef});
         }
-
+        this.currentInternalSet.add(setInternal);
 
     }
 
@@ -891,6 +917,7 @@ public class CodeGenerationWalker
         ArrayList<org.sablecc.objectmacro.codegeneration.java.macro.Macro> tempInternalList = this.currentInternalList;
 
         node.getMacroRef().apply(this);
+        //this.currentListParts.add(this.currentInitStringBuilder);
 
         this.currentInsertMacroPart = new MInsertMacroPart(macro_name
         , String.valueOf(indexBuilder)
