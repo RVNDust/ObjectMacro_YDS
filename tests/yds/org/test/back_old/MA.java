@@ -43,11 +43,7 @@ public class MA extends Macro{
             }
 
             macro.apply(new InternalsInitializer("Y"){
-@Override
-void setB(MB mB){
-
-                mB.setY(YContext, getZ());
-}
+ 
 });
 
             this.list_Y[i++] = macro;
@@ -124,7 +120,7 @@ else {
         int i = 0;
 
         for(Macro macro : macros){
-                        
+
             sb0.append(macro.build(local_context));
             i++;
 

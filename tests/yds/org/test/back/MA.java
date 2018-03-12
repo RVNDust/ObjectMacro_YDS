@@ -10,6 +10,7 @@ public class MA extends Macro{
     private Macro list_Y[];
     private Macro list_Z[];
 
+    private final Context YContext = new Context();    private final Context ZContext = new Context();
 
     public MA(Macro pX[], String pX, Macro pY[], Macro pZ[]){
 
@@ -40,7 +41,47 @@ public class MA extends Macro{
             }
 
             macro.apply(new InternalsInitializer("Y"){
+@Override
+void setEmptyMacro(MEmptyMacro mEmptyMacro){
 
+            sb0.append(", ");
+    
+}@Override
+void setEmptyMacro(MEmptyMacro mEmptyMacro){
+
+            sb0.append(", ");
+        sb0.append("La liste x : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+        sb0.append("Corps de semicolon : ");
+        MSemicolonSeparator minsert_1 = new MSemicolonSeparator();
+                sb0.append(", ");        sb0.append("La liste x : ");        sb0.append(buildX());        sb0.append(LINE_SEPARATOR);        sb0.append("Corps de semicolon : ");
+        
+        sb0.append(minsert_1.build(null));
+        sb0.append(".");
+        sb0.append("empty");
+        sb0.append("; ");
+            minsert_1.setX(null, getX(context));
+}@Override
+void setB(MB mB){
+
+            sb0.append(", ");
+        sb0.append("La liste x : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+        sb0.append("Corps de semicolon : ");
+        MSemicolonSeparator minsert_1 = new MSemicolonSeparator();
+                sb0.append(", ");        sb0.append("La liste x : ");        sb0.append(buildX());        sb0.append(LINE_SEPARATOR);        sb0.append("Corps de semicolon : ");
+        
+        sb0.append(minsert_1.build(null));
+        sb0.append(".");
+        sb0.append("empty");
+        sb0.append("; ");
+        sb0.append("Le corps de C : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+            minsert_1.setX(null, getX(context));
+}
 });
 
             this.list_Y[i++] = macro;
@@ -62,7 +103,66 @@ public class MA extends Macro{
             }
 
             macro.apply(new InternalsInitializer("Z"){
+@Override
+void setEmptyMacro(MEmptyMacro mEmptyMacro){
 
+            sb0.append(", ");
+    
+}@Override
+void setEmptyMacro(MEmptyMacro mEmptyMacro){
+
+            sb0.append(", ");
+        sb0.append("La liste x : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+        sb0.append("Corps de semicolon : ");
+        MSemicolonSeparator minsert_1 = new MSemicolonSeparator();
+                sb0.append(", ");        sb0.append("La liste x : ");        sb0.append(buildX());        sb0.append(LINE_SEPARATOR);        sb0.append("Corps de semicolon : ");
+        
+        sb0.append(minsert_1.build(null));
+        sb0.append(".");
+        sb0.append("empty");
+        sb0.append("; ");
+            minsert_1.setX(null, getX(context));
+}@Override
+void setB(MB mB){
+
+            sb0.append(", ");
+        sb0.append("La liste x : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+        sb0.append("Corps de semicolon : ");
+        MSemicolonSeparator minsert_1 = new MSemicolonSeparator();
+                sb0.append(", ");        sb0.append("La liste x : ");        sb0.append(buildX());        sb0.append(LINE_SEPARATOR);        sb0.append("Corps de semicolon : ");
+        
+        sb0.append(minsert_1.build(null));
+        sb0.append(".");
+        sb0.append("empty");
+        sb0.append("; ");
+        sb0.append("Le corps de C : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+            minsert_1.setX(null, getX(context));
+}@Override
+void setC(MC mC){
+
+            sb0.append(", ");
+        sb0.append("La liste x : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+        sb0.append("Corps de semicolon : ");
+        MSemicolonSeparator minsert_1 = new MSemicolonSeparator();
+                sb0.append(", ");        sb0.append("La liste x : ");        sb0.append(buildX());        sb0.append(LINE_SEPARATOR);        sb0.append("Corps de semicolon : ");
+        
+        sb0.append(minsert_1.build(null));
+        sb0.append(".");
+        sb0.append("empty");
+        sb0.append("; ");
+        sb0.append("Le corps de C : ");
+        sb0.append(buildX());
+        sb0.append(LINE_SEPARATOR);
+            minsert_1.setX(null, getX(context));        mB.setY(YContext, getZ(YContext));
+}
 });
 
             this.list_Z[i++] = macro;

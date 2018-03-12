@@ -8,6 +8,7 @@ public class MCommaSeparator extends Macro{
 
     private Macro list_X[];
 
+    private final Context XContext = new Context();
 
     public MCommaSeparator(Macro pX[]){
 
@@ -31,7 +32,12 @@ public class MCommaSeparator extends Macro{
             }
 
             macro.apply(new InternalsInitializer("X"){
+@Override
+void setEmptyMacro(MEmptyMacro mEmptyMacro){
 
+            sb0.append(", ");
+    
+}
 });
 
             this.list_X[i++] = macro;

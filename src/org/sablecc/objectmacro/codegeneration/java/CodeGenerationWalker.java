@@ -509,6 +509,7 @@ public class CodeGenerationWalker
         this.createdBuilders = new ArrayList<>();
         this.createdInserts = new ArrayList<>();
         this.currentParamMacroRefBuilder = null;
+        this.currentListRedefinedInternalSetter.clear();
     }
 
     @Override
@@ -559,6 +560,8 @@ public class CodeGenerationWalker
             this.currentRedefinedInternalsSetter = new MRedefinedInternalsSetter(currentMacroName
                     , this.currentListParts.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentListParts.size()])
                     , this.currentInternalSet.toArray(new org.sablecc.objectmacro.codegeneration.java.macro.Macro[this.currentInternalSet.size()]));
+
+            this.currentListRedefinedInternalSetter.add(this.currentRedefinedInternalsSetter);
         }
 
     }

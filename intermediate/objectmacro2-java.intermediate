@@ -242,6 +242,9 @@ Macro {
  Name = { 'context', 'field' } }
  }
  Directive {
+     Name = 'separator'       eol;
+ }
+,  Directive {
      Name = { 'before', 'first' }       eol;
  }
  }
